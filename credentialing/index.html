@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Credentialing Quiz</title>
+<style>
+:root{
+  --bg:#f6f5f2;--card:#ffffff;--ink:#1d1d1f;--muted:#5f6368;--line:#dedbd4;
+  --accent:#8b1a1a;--accent-ink:#ffffff;--ok:#1e7a46;--ok-bg:#e6f4ec;--bad:#b3261e;--bad-bg:#fbe9e7;--chip:#f0ece6;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#141414;--card:#1f1f1f;--ink:#ececec;--muted:#a3a3a3;--line:#333;
+    --accent:#d0585a;--accent-ink:#141414;--ok:#6fcf97;--ok-bg:#16301f;--bad:#f28b82;--bad-bg:#3a1b19;--chip:#2a2a2a;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141414;--card:#1f1f1f;--ink:#ececec;--muted:#a3a3a3;--line:#333;
+  --accent:#d0585a;--accent-ink:#141414;--ok:#6fcf97;--ok-bg:#16301f;--bad:#f28b82;--bad-bg:#3a1b19;--chip:#2a2a2a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:24px 16px 64px}
+header h1{margin:0 0 4px;font-size:1.6rem;letter-spacing:-.01em}
+header p{margin:0;color:var(--muted)}
+.bar{height:6px;background:var(--line);border-radius:3px;margin:20px 0 8px;overflow:hidden}
+.bar span{display:block;height:100%;background:var(--accent);width:0;transition:width .25s}
+.meta{display:flex;justify-content:space-between;color:var(--muted);font-size:.9rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;margin-top:16px}
+.chip{display:inline-block;background:var(--chip);color:var(--muted);font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;padding:3px 10px;border-radius:999px}
+.stem{font-size:1.08rem;margin:12px 0 16px}
+.opt{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:8px 0;font:inherit;cursor:pointer}
+.opt:hover:not([disabled]){border-color:var(--accent)}
+.opt b{flex:0 0 auto;width:24px;height:24px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-size:.82rem}
+.opt.correct{border-color:var(--ok);background:var(--ok-bg)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-bg)}
+.opt[disabled]{cursor:default}
+.explain{margin-top:16px;padding:14px 16px;border-left:4px solid var(--accent);background:var(--chip);border-radius:0 10px 10px 0}
+.explain h3{margin:0 0 6px;font-size:1rem}
+.video{margin-top:14px}
+.video .frame{position:relative;padding-top:56.25%;border-radius:10px;overflow:hidden;background:#000}
+.video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.video a{color:var(--accent);font-weight:600}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:18px}
+.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;padding:11px 18px;font:inherit;font-weight:600;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn[disabled]{opacity:.4;cursor:default}
+.score{font-size:2.6rem;font-weight:700;margin:6px 0}
+.pass{color:var(--ok)} .fail{color:var(--bad)}
+table{width:100%;border-collapse:collapse;margin-top:14px;font-size:.92rem}
+td,th{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%}
+.row-btn{background:none;border:0;color:var(--accent);font:inherit;cursor:pointer;padding:0;text-align:left}
+input[type=text]{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;margin:8px 0 14px}
+@media print{.nav,.no-print{display:none}body{background:#fff}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Credentialing Quiz</h1>
+    <p>Pulmonary POCUS · Resident Credentialing · 20 questions · 70% to pass</p>
+  </header>
+  <div id="app"></div>
+</div>
+
+<script>
+/* ============================================================
+   VIDEO LINKS: paste the YouTube URL already used on
+   pulmonarypocus.com for each question. Any YouTube link format
+   works (youtu.be/..., youtube.com/watch?v=..., /shorts/...).
+   Leave "" to hide the video for that question.
+   ============================================================ */
+/* ============================================================
+   RESULTS: paste your Google Apps Script web app URL (ends in /exec).
+   Every finished attempt is sent to your Google Sheet.
+   ============================================================ */
+const RESULTS_URL = "https://script.google.com/macros/s/AKfycbwBhq_7ezHr4P37SCphQS22Y-XuJDwHvXYY7YdLbmcdNJzoHjRO68HicW5gk5GdC9W6/exec";
+const QUIZ_NAME = "Credentialing Quiz";
+
+const VIDEOS = {
+  1:"https://youtu.be/nr3tCzy2SVg", 2:"", 3:"https://youtu.be/e_e7QpBJuI8", 4:"", 5:"",
+  6:"https://youtu.be/srF58UEGqjY", 7:"", 8:"", 9:"https://youtu.be/wsZQsb2EsyI", 10:"",
+  11:"", 12:"", 13:"https://youtu.be/wAT046kLUIM", 14:"https://youtu.be/OzEYE1zRSx0", 15:"https://youtu.be/9S3n_ULlf0U",
+  16:"", 17:"", 18:"", 19:"", 20:"https://youtu.be/KCMG2NXOUgo"
+};
+
+const Q = [
+{id:1,topic:"Knobology",stem:"Color Doppler of a vessel shows a mosaic of red, yellow and blue in the center of the lumen. The probe angle is appropriate. What is the best first adjustment?",
+ opts:["Increase color gain","Increase the color scale (PRF / Nyquist limit)","Decrease the color scale","Switch to a higher frequency probe"],a:1,
+ ex:"A mosaic center with an intact vessel suggests aliasing: flow velocity exceeds the Nyquist limit. Raising the color scale (or shifting the baseline) eliminates it. Lowering the scale makes aliasing worse, and adding gain only adds noise and bleed."},
+{id:2,topic:"Physics",stem:"In the right coronal view, the liver appears duplicated above the diaphragm. What does this indicate?",
+ opts:["Right pleural effusion","Normal air-filled lung (mirror image artifact)","Diaphragmatic rupture","Consolidation of the right lower lobe"],a:1,
+ ex:"The diaphragm acts as a strong reflector, and air in normal lung produces a mirror image of the liver above it. When fluid or consolidation replaces air, the mirror image disappears and true structures (fluid, spine, lung tissue) are seen instead."},
+{id:3,topic:"Lung",stem:"A dyspneic patient has diffuse bilateral B-lines with a thin, smooth pleural line, preserved sliding, and no spared areas or subpleural consolidations. This pattern favors:",
+ opts:["ARDS","Cardiogenic pulmonary edema","Bilateral pneumothorax","Pulmonary fibrosis"],a:1,
+ ex:"Homogeneous bilateral B-lines with a smooth pleural line and preserved sliding favor hydrostatic (cardiogenic) edema. ARDS more often shows a thickened, irregular pleural line, reduced sliding, spared areas and subpleural consolidations. Fibrosis shows irregular pleura and is chronic. Pair the lung findings with the heart and IVC."},
+{id:4,topic:"Lung",stem:"Shortly after intubation, lung sliding is present on the right but absent on the left, and a lung pulse is seen on the left. The most likely explanation is:",
+ opts:["Left pneumothorax","Right mainstem intubation","Esophageal intubation","Left pleural effusion"],a:1,
+ ex:"A lung pulse means the visceral and parietal pleura are still apposed, so pneumothorax is unlikely on the left. Absent sliding with a lung pulse means the left lung is not being ventilated, which fits right mainstem intubation. Pull the tube back and recheck for bilateral sliding."},
+{id:5,topic:"Lung",stem:"In a supine trauma patient, where should you scan first to rule out pneumothorax?",
+ opts:["Posterior lateral alveolar and pleural point (PLAPS)","Anterior chest, least dependent zones","Right coronal view at the diaphragm","Supraclavicular fossa"],a:1,
+ ex:"Free air rises to the least dependent part of the chest. In a supine patient that is the anterior chest, often the lower anterior and paracardiac zones. Sliding seen at these points makes pneumothorax very unlikely at that location."},
+{id:6,topic:"Lung",stem:"Which pleural effusion appearance most reliably indicates an exudate?",
+ opts:["Anechoic fluid","Septations or a complex appearance","Effusion larger than 5 cm","Presence of the spine sign"],a:1,
+ ex:"Septated, complex or echogenic (swirling particles) effusions are usually exudates. Anechoic effusions can be either transudates or exudates, so an anechoic appearance does not exclude an exudate. Thoracentesis still defines the fluid."},
+{id:7,topic:"Lung",stem:"M-mode across a pleural effusion shows the lung line moving toward and away from the pleural line with each breath. This is called the:",
+ opts:["Seashore sign","Barcode sign","Sinusoid sign","Lung point"],a:2,
+ ex:"The sinusoid sign is the inspiratory movement of the visceral pleura (lung line) toward the parietal pleura across an effusion. It confirms free fluid and suggests the fluid is not too viscous. It pairs with the quad sign on 2D."},
+{id:8,topic:"Cardiac",stem:"A hypotensive patient has a small, hyperdynamic LV with near cavity obliteration at end systole (papillary muscles touching). The best interpretation is:",
+ opts:["Severe LV systolic dysfunction","Hypovolemia or low afterload (vasoplegia)","Tamponade","Restrictive cardiomyopathy"],a:1,
+ ex:"End-systolic cavity obliteration (kissing papillary muscles) suggests low preload, low afterload, or both. Look at the IVC and clinical context to separate hypovolemia from distributive shock. Also watch for dynamic LVOT obstruction in this setting."},
+{id:9,topic:"Cardiac",stem:"In which patient is the subcostal 4-chamber view most likely to be the best cardiac window?",
+ opts:["Thin patient, supine, spontaneously breathing","Patient with severe COPD and hyperinflation","Patient in left lateral decubitus","Patient with a large abdominal wound"],a:1,
+ ex:"Hyperinflated lungs block parasternal and apical windows, but the flattened diaphragm pushes the heart down toward the subxiphoid area. The liver becomes the acoustic window. Mechanically ventilated patients often benefit for the same reason."},
+{id:10,topic:"Cardiac",stem:"A patient with a dilated RV has an RV free wall thickness of 8 mm in the subcostal view. This suggests:",
+ opts:["Acute pulmonary embolism","Chronic RV pressure overload","Normal RV","RV infarction"],a:1,
+ ex:"Normal RV free wall thickness is 5 mm or less. A thickened RV takes time to develop, so it points to chronic pressure overload such as pulmonary hypertension. A dilated but thin-walled RV is more typical of an acute process like PE."},
+{id:11,topic:"Cardiac",stem:"A patient with severe pulmonary hypertension has a large effusion and clinical tamponade, but no RV diastolic collapse. Why?",
+ opts:["The effusion must be loculated posteriorly","High RV pressure and a thick RV wall resist collapse","RV collapse only occurs in systole","The patient must be hypovolemic"],a:1,
+ ex:"Chamber collapse happens when pericardial pressure exceeds chamber pressure. With high RV pressures or RV hypertrophy, the RV resists collapse, so tamponade can occur without it. Look for RA or LA collapse, a plethoric IVC and respiratory flow variation, and treat the patient, not one sign."},
+{id:12,topic:"Cardiac",stem:"In the parasternal short axis view at the papillary muscle level, a regional wall motion abnormality of the inferior wall most likely reflects disease in which artery?",
+ opts:["Left anterior descending","Left circumflex","Right coronary artery","Left main only"],a:2,
+ ex:"In PSAX the anterior and anteroseptal segments are LAD territory, the lateral and inferolateral segments are circumflex, and the inferior and inferoseptal segments are usually RCA. Coronary dominance and overlap vary, so treat this as a guide."},
+{id:13,topic:"Cardiac",stem:"TAPSE measured by M-mode in the apical 4-chamber view is 13 mm. This indicates:",
+ opts:["Normal RV systolic function","Reduced RV systolic function","Reduced LV systolic function","Severe tricuspid regurgitation"],a:1,
+ ex:"TAPSE below 17 mm suggests RV systolic dysfunction. Align the M-mode cursor with the direction of the lateral tricuspid annulus motion. TAPSE is angle dependent and reflects only longitudinal function of the free wall."},
+{id:14,topic:"Cardiac",stem:"In your apical 4-chamber view, the LV apex looks round and thick-walled and the LV seems short. What is the most likely problem and fix?",
+ opts:["Normal view; no change","Foreshortening; slide toward the true apex (usually more lateral and inferior)","Off-axis into 5-chamber; tilt posteriorly","RV is dilated; switch to subcostal"],a:1,
+ ex:"A rounded, thick apex with a short LV is a classic foreshortened view. The probe is too high or too medial. Slide toward the point of maximal impulse, usually lateral and down, until the apex is thin and the LV looks elongated. Foreshortening can hide apical wall motion abnormalities and overestimate function."},
+{id:15,topic:"IVC",stem:"How do you best confirm the vessel you are measuring in the subcostal long axis view is the IVC and not the aorta?",
+ opts:["It is the larger vessel","It drains into the right atrium and receives a hepatic vein","It pulsates more","It sits to the left of the spine"],a:1,
+ ex:"The IVC enters the right atrium and the hepatic veins join it. The aorta is thick walled, pulsatile, does not enter the RA and lies to the left of midline. Rotate to short axis if unsure, and measure the IVC 1 to 2 cm caudal to the hepatic vein junction."},
+{id:16,topic:"IVC",stem:"Which patient is most likely to have a dilated IVC without elevated RA pressure?",
+ opts:["Patient with cardiac tamponade","Well-trained endurance athlete","Patient with severe tricuspid regurgitation","Patient with acute RV failure"],a:1,
+ ex:"Trained athletes can have a large IVC with normal RA pressure. Tamponade, severe TR and RV failure all dilate the IVC because RA pressure is truly high. Always place IVC size in clinical context."},
+{id:17,topic:"Vascular",stem:"A 2-region compression exam (common femoral and popliteal veins) is normal in a patient with high clinical suspicion for DVT. What is its main limitation?",
+ opts:["It cannot detect common femoral thrombus","It does not evaluate isolated calf vein DVT","It requires color Doppler to be valid","It cannot be done at the bedside"],a:1,
+ ex:"The 2-region exam does not assess calf veins. When suspicion stays high, options include a repeat exam in about one week, a D-dimer strategy, or a formal whole-leg study. Proximal extension of calf thrombus is what the repeat exam catches."},
+{id:18,topic:"Vascular",stem:"The common femoral vein compresses fully, but its Doppler signal is continuous and loses normal respiratory variation. This suggests:",
+ opts:["Normal finding","More proximal obstruction (iliac vein or IVC)","Distal calf DVT","Arterial insufficiency"],a:1,
+ ex:"Normal common femoral vein flow is phasic with respiration. Loss of phasicity suggests obstruction upstream, such as iliac vein thrombosis or extrinsic compression, which compression of the groin alone cannot see. Compare with the other side."},
+{id:19,topic:"Abdominal",stem:"Which maneuver increases the sensitivity of the RUQ view for small amounts of free intraperitoneal fluid?",
+ opts:["Reverse Trendelenburg","Trendelenburg positioning","Left lateral decubitus","Having the patient hold an expiration"],a:1,
+ ex:"Head-down (Trendelenburg) positioning shifts fluid toward the hepatorenal space, improving RUQ sensitivity. Reverse Trendelenburg moves fluid toward the pelvis, which helps the pelvic view. Small volumes can still be missed, so repeat the exam if the clinical picture changes."},
+{id:20,topic:"VExUS",stem:"IVC 2.5 cm. Hepatic vein shows S-wave reversal. Portal vein Vmax 30 cm/s and Vmin 12 cm/s. Intrarenal vein shows distinct S and D waves (biphasic). What is the VExUS grade?",
+ opts:["Grade 1","Grade 2","Grade 3","Cannot be graded without ECG"],a:2,
+ ex:"Portal pulsatility fraction = (30 - 12) / 30 = 60%, which is severe (50% or more). Hepatic S reversal is also severe. The biphasic intrarenal pattern is mild. With an IVC over 2 cm and two severe waveforms, this is Grade 3, severe congestion."}
+];
+
+/* Shuffle answer order each time the quiz loads */
+Q.forEach(q=>{
+  const idx=q.opts.map((_,k)=>k);
+  for(let k=idx.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[idx[k],idx[j]]=[idx[j],idx[k]];}
+  q.opts=idx.map(k=>q.opts[k]); q.a=idx.indexOf(q.a);
+});
+
+const PASS = 0.70;
+let state = {i:0, ans:Array(Q.length).fill(null), name:"", view:"start", sent:false};
+
+function ytEmbed(url){
+  if(!url) return null;
+  const m = url.match(/(?:youtu\.be\/|v=|\/shorts\/|\/embed\/|\/live\/)([A-Za-z0-9_-]{11})/);
+  return m ? "https://www.youtube-nocookie.com/embed/"+m[1] : null;
+}
+const L = "ABCDEFG";
+const el = document.getElementById("app");
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function render(){
+  if(state.view==="start") return renderStart();
+  if(state.view==="done") return renderDone();
+  renderQ();
+}
+
+function renderStart(){
+  el.innerHTML = `
+  <div class="card">
+    <p style="margin-top:0">This credentialing quiz covers the POCUS applications in the resident credentialing pathway: knobology, lung, cardiac, IVC, vascular, abdominal, renal and VExUS. Each answer shows an explanation and, where available, a teaching video from the site.</p>
+    <label for="nm"><b>Your name</b> (shown on your results)</label>
+    <input id="nm" type="text" placeholder="First and last name" autocomplete="name" value="${esc(state.name)}">
+    <button class="btn" id="go">Start quiz</button>
+  </div>`;
+  const nm=document.getElementById("nm"), go=document.getElementById("go");
+  const chk=()=>{go.disabled=nm.value.trim().length<3;}; chk(); nm.oninput=chk;
+  go.onclick=()=>{state.name=nm.value.trim();state.view="q";render();};
+}
+
+function renderQ(){
+  const q=Q[state.i], picked=state.ans[state.i], answered=picked!==null;
+  const done=state.ans.filter(a=>a!==null).length;
+  let opts=q.opts.map((o,k)=>{
+    let cls="opt";
+    if(answered){ if(k===q.a) cls+=" correct"; else if(k===picked) cls+=" wrong"; }
+    return `<button class="${cls}" data-k="${k}" ${answered?"disabled":""}><b>${L[k]}</b><span>${esc(o)}</span></button>`;
+  }).join("");
+  let ex="";
+  if(answered){
+    const ok=picked===q.a, src=ytEmbed(VIDEOS[q.id]);
+    ex=`<div class="explain"><h3 class="${ok?"pass":"fail"}">${ok?"Correct":"Incorrect"}. Answer: ${L[q.a]}</h3><div>${esc(q.ex)}</div>
+      ${src?`<div class="video"><div class="frame"><iframe src="${src}" title="Teaching video" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+      <div style="margin-top:6px"><a href="${esc(VIDEOS[q.id])}" target="_blank" rel="noopener">Open video on YouTube</a></div></div>`:""}</div>`;
+  }
+  const last=state.i===Q.length-1;
+  el.innerHTML=`
+  <div class="bar"><span style="width:${done/Q.length*100}%"></span></div>
+  <div class="meta"><span>Question ${state.i+1} of ${Q.length}</span><span>${done} answered</span></div>
+  <div class="card">
+    <span class="chip">${q.topic}</span>
+    <div class="stem">${esc(q.stem)}</div>
+    ${opts}${ex}
+    <div class="nav">
+      <button class="btn ghost" id="prev" ${state.i===0?"disabled":""}>Back</button>
+      <button class="btn" id="next" ${answered?"":"disabled"}>${last?"See results":"Next"}</button>
+    </div>
+  </div>`;
+  el.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{state.ans[state.i]=+b.dataset.k;render();});
+  document.getElementById("prev").onclick=()=>{state.i--;render();};
+  document.getElementById("next").onclick=()=>{
+    if(last){ state.view="done"; } else state.i++;
+    render(); window.scrollTo(0,0);
+  };
+}
+
+function renderDone(){
+  const correct=Q.filter((q,k)=>state.ans[k]===q.a).length, pct=correct/Q.length, pass=pct>=PASS;
+  const topics={};
+  Q.forEach((q,k)=>{topics[q.topic]=topics[q.topic]||[0,0];topics[q.topic][1]++;if(state.ans[k]===q.a)topics[q.topic][0]++;});
+  const rows=Q.map((q,k)=>{const ok=state.ans[k]===q.a;return `<tr><td><span class="dot" style="background:var(--${ok?"ok":"bad"})"></span></td><td><button class="row-btn" data-k="${k}">${k+1}. ${esc(q.stem.slice(0,90))}${q.stem.length>90?"...":""}</button></td><td>${q.topic}</td></tr>`;}).join("");
+  const trows=Object.entries(topics).map(([t,[c,n]])=>`<tr><td>${t}</td><td>${c} / ${n}</td></tr>`).join("");
+  el.innerHTML=`
+  <div class="card">
+    <div class="chip">${state.name?esc(state.name)+" · ":""}${new Date().toLocaleDateString()}</div>
+    <div class="score ${pass?"pass":"fail"}">${correct} / ${Q.length} (${Math.round(pct*100)}%)</div>
+    <p style="margin:0"><b>${pass?"Passed.":"Not yet passed."}</b> ${pass?"Nice work. Screenshot or print this page for your credentialing file.":"A score of 70% (14 of 20) is needed. Review the missed questions and their videos, then try again."}</p>
+    <p id="sendStatus" class="no-print" style="color:var(--muted);font-size:.9rem;margin:10px 0 0"></p>
+    <table><tr><th>Topic</th><th>Score</th></tr>${trows}</table>
+    <table><tr><th></th><th>Question (tap to review)</th><th>Topic</th></tr>${rows}</table>
+    <div class="nav no-print">
+      <button class="btn ghost" id="print">Print results</button>
+      <button class="btn" id="retake">Retake</button>
+    </div>
+  </div>`;
+  el.querySelectorAll(".row-btn").forEach(b=>b.onclick=()=>{state.i=+b.dataset.k;state.view="q";render();window.scrollTo(0,0);});
+  document.getElementById("print").onclick=()=>window.print();
+  if(!state.sent){
+    state.sent=true;
+    const missed=Q.map((q,k)=>state.ans[k]===q.a?null:(q.id+" ("+q.topic+")")).filter(Boolean).join(", ");
+    sendResults({quiz:QUIZ_NAME,name:state.name,correct,total:Q.length,percent:Math.round(pct*100),
+      result:pass?"Pass":"Fail",missed:missed||"None",
+      topics:Object.entries(topics).map(([t,[c,n]])=>t+" "+c+"/"+n).join("; ")});
+  } else setStatus(state.status||"");
+  document.getElementById("retake").onclick=()=>{state={i:0,ans:Array(Q.length).fill(null),name:state.name,view:"q",sent:false};render();};
+}
+
+function setStatus(t){state.status=t;const e=document.getElementById("sendStatus");if(e)e.textContent=t;}
+function sendResults(payload){
+  if(!RESULTS_URL){setStatus("");return;}
+  setStatus("Submitting your score...");
+  fetch(RESULTS_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)})
+    .then(()=>setStatus("Score submitted to Dr. Jackson."))
+    .catch(()=>setStatus("Could not submit your score. Please print this page and email it to pulmonarypocus@gmail.com."));
+}
+
+render();
+</script>
+</body>
+</html>
