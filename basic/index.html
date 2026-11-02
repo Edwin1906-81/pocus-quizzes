@@ -80,23 +80,23 @@ const RESULTS_URL = "https://script.google.com/macros/s/AKfycbwBhq_7ezHr4P37SCph
 const QUIZ_NAME = "Basic POCUS Quiz";
 
 const VIDEOS = {
-  1:"https://youtu.be/E0KGrQ46NxM", 2:"", 3:"https://youtu.be/e_e7QpBJuI8", 4:"https://youtu.be/eEJ_BpmoPHE", 5:"",
-  6:"https://youtu.be/e_e7QpBJuI8", 7:"https://youtu.be/aI4dJuGahBM", 8:"https://youtu.be/u3LfD1-S7LQ", 9:"", 10:"",
-  11:"", 12:"", 13:"https://youtu.be/0ulykJpNaNE", 14:"", 15:"https://youtu.be/rLmnmxAhEEU",
-  16:"", 17:"", 18:"", 19:"https://youtu.be/Xru6iDyEGfU", 20:"https://youtu.be/_r0beUxvzXY",
+  1:"https://youtu.be/E0KGrQ46NxM", 2:"", 3:"https://youtu.be/e_e7QpBJuI8", 4:"", 5:"",
+  6:"https://youtu.be/e_e7QpBJuI8", 7:"", 8:"https://youtu.be/u3LfD1-S7LQ", 9:"", 10:"",
+  11:"", 12:"", 13:"", 14:"", 15:"https://youtu.be/rLmnmxAhEEU",
+  16:"", 17:"", 18:"", 19:"", 20:"https://youtu.be/_r0beUxvzXY",
   21:"https://youtu.be/qCh1POo5WTA", 22:"https://youtu.be/Hvhezxl5_L0", 23:"https://youtu.be/4cvWrMCoEyI", 24:"", 25:"https://youtu.be/Yq31rO82Ad8"
 };
 
 const Q = [
-{id:1,topic:"Knobology",stem:"You want to look closely at the pleural line for lung sliding in a thin patient. Which transducer gives the best detail?",
- opts:["Phased array, 1 to 5 MHz","Curvilinear, 2 to 5 MHz","Linear, high frequency (about 10 to 15 MHz)","Endocavitary, 8 MHz"],a:2,
- ex:"The pleural line sits only 1 to 3 cm deep in a thin patient. A high frequency linear probe gives the best axial resolution at shallow depth, which makes sliding, B-line origin and subtle pleural irregularity easier to see. Phased array and curvilinear probes trade resolution for penetration."},
+{id:1,topic:"Knobology",stem:"What type of transducer is being used here?",
+ opts:["Phased array with the abdominal preset","Phased array with the cardiac preset","Curvilinear with the abdominal preset","Linear with the lung preset"],a:0,
+ ex:"The image fans out from a narrow point at the top of the screen, which is the signature of a phased array probe. A curvilinear probe makes a wide, curved top edge, and a linear probe makes a rectangular image. The orientation marker is on the left of the screen, which is the abdominal (radiology) convention; the cardiac preset flips the marker to the right."},
 {id:2,topic:"Physics",stem:"Increasing transducer frequency has which effect?",
  opts:["Better resolution and deeper penetration","Better resolution and less penetration","Worse resolution and deeper penetration","No change in resolution, less penetration"],a:1,
  ex:"Higher frequency means shorter wavelength, so axial resolution improves. It is also attenuated faster, so penetration drops. This is why linear probes are used for superficial structures and low frequency phased array or curvilinear probes for the heart and abdomen."},
-{id:3,topic:"Lung",stem:"On an anterior chest scan you see lung sliding with horizontal, evenly spaced lines below the pleural line. What do these findings represent?",
- opts:["Interstitial edema","Normally aerated lung (A-profile)","Pneumothorax","Pleural effusion"],a:1,
- ex:"A-lines are reverberation artifacts of the pleural line repeating at equal intervals. With lung sliding they indicate normally aerated lung at that spot (an A-profile). A-lines without sliding should make you think about pneumothorax."},
+{id:3,topic:"Lung",stem:"What artifact is seen in the left and right lung?",
+ opts:["A-lines on the left, B-lines on the right","B-lines on the left, A-lines on the right","A-lines in both lungs","B-lines in both lungs"],a:0,
+ ex:"The left lung shows A-lines: horizontal reverberations of the pleural line repeating at equal intervals, which with lung sliding indicate normally aerated lung. The right lung shows B-lines: vertical hyperechoic artifacts that start at the pleural line, reach the bottom of the screen without fading, move with sliding and erase the A-lines."},
 {id:4,topic:"Lung",stem:"M-mode through the pleural line shows only horizontal lines above and below the pleura (the barcode or stratosphere sign). What does this mean?",
  opts:["Normal lung sliding","Absent lung sliding at that location","Consolidation","Diaphragmatic paralysis"],a:1,
  ex:"Normal sliding produces the seashore sign: flat lines above the pleura and a granular pattern below. The barcode sign means no sliding at that spot. Pneumothorax is one cause, but so are mainstem intubation, apnea, pleurodesis and adhesions. It supports pneumothorax but does not prove it."},
@@ -105,7 +105,7 @@ const Q = [
  ex:"The lung point is where sliding lung meets non-sliding pleura during the respiratory cycle, marking the edge of the pneumothorax. It is close to 100% specific. Absent sliding and absent B-lines are sensitive but not specific. A lung pulse means the pleurae are apposed, which argues against pneumothorax at that spot."},
 {id:6,topic:"Lung",stem:"Which description fits a B-line?",
  opts:["Horizontal line repeating the pleural line at equal intervals","Short vertical line that fades within 2 cm","Vertical hyperechoic artifact from the pleural line to the bottom of the screen that moves with sliding and erases A-lines","Hypoechoic space above the diaphragm"],a:2,
- ex:"B-lines arise from the pleural line, extend to the bottom of the screen without fading, move with lung sliding and erase A-lines. Three or more in one intercostal space is a positive zone. Bilateral, diffuse positive zones suggest an interstitial syndrome such as cardiogenic pulmonary edema."},
+ ex:"The right-sided image of the right lung shows B-lines. B-lines arise from the pleural line, extend to the bottom of the screen without fading, move with lung sliding and erase A-lines. Three or more in one intercostal space is a positive zone. Bilateral, diffuse positive zones suggest an interstitial syndrome such as cardiogenic pulmonary edema."},
 {id:7,topic:"Lung",stem:"In the right coronal view you can see the vertebral bodies continue above the diaphragm. What does this suggest?",
  opts:["Normal aerated lung","Pleural effusion (spine sign)","Pneumothorax","Ascites only"],a:1,
  ex:"Air normally scatters the beam above the diaphragm so the spine stops at the diaphragm. Fluid transmits sound, so the spine becomes visible above it. This spine sign is a reliable marker of pleural effusion, often with the curtain sign lost."},
