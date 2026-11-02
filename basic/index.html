@@ -87,6 +87,9 @@ const VIDEOS = {
   21:"https://youtu.be/qCh1POo5WTA", 22:"https://youtu.be/Hvhezxl5_L0", 23:"https://youtu.be/4cvWrMCoEyI", 24:"", 25:"https://youtu.be/Yq31rO82Ad8"
 };
 
+/* Questions whose video is shown with the question, before answering */
+const STEM_VIDEO = [1];
+
 const Q = [
 {id:1,topic:"Knobology",stem:"What type of transducer is being used here?",
  opts:["Phased array with the abdominal preset","Phased array with the cardiac preset","Curvilinear with the abdominal preset","Linear with the lung preset"],a:0,
@@ -213,18 +216,20 @@ function renderQ(){
   }).join("");
   let ex="";
   if(answered){
-    const ok=picked===q.a, src=ytEmbed(VIDEOS[q.id]);
+    const ok=picked===q.a, src=STEM_VIDEO.includes(q.id)?null:ytEmbed(VIDEOS[q.id]);
     ex=`<div class="explain"><h3 class="${ok?"pass":"fail"}">${ok?"Correct":"Incorrect"}. Answer: ${L[q.a]}</h3><div>${esc(q.ex)}</div>
       ${src?`<div class="video"><div class="frame"><iframe src="${src}" title="Teaching video" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
       <div style="margin-top:6px"><a href="${esc(VIDEOS[q.id])}" target="_blank" rel="noopener">Open video on YouTube</a></div></div>`:""}</div>`;
   }
+  const sv=STEM_VIDEO.includes(q.id)?ytEmbed(VIDEOS[q.id]):null;
+  const stemVid=sv?`<div class="video" style="margin:0 0 16px"><div class="frame"><iframe src="${sv}" title="Question clip" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div></div>`:"";
   const last=state.i===Q.length-1;
   el.innerHTML=`
   <div class="bar"><span style="width:${done/Q.length*100}%"></span></div>
   <div class="meta"><span>Question ${state.i+1} of ${Q.length}</span><span>${done} answered</span></div>
   <div class="card">
     <span class="chip">${q.topic}</span>
-    <div class="stem">${esc(q.stem)}</div>
+    <div class="stem">${esc(q.stem)}</div>${stemVid}
     ${opts}${ex}
     <div class="nav">
       <button class="btn ghost" id="prev" ${state.i===0?"disabled":""}>Back</button>
